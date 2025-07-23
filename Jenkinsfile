@@ -16,7 +16,7 @@ pipeline {
     
                         docker tag dojo:latest 842675988267.dkr.ecr.us-east-1.amazonaws.com/mywork:latest
 
-                        docker push 842675988267.dkr.ecr.us-east-1.amazonaws.com/my-repo:latest'''
+                        docker push 842675988267.dkr.ecr.us-east-1.amazonaws.com/mywork:latest'''
 
                 } }
         }
