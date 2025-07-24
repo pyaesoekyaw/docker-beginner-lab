@@ -46,12 +46,12 @@ Follow the on-screen instructions to unlock Jenkins (retrieve the initial admin 
 
 Choose "Install suggested plugins."
 
-* **On Jenkins Agent:** Generate an SSH key pair `ssh-keygen`
+**On Jenkins Agent:** Generate an SSH key pair `ssh-keygen`
 - navigate to /home/ubuntu/secrets/.ssh/<your key>
 - copy the public key and paste into authorized key.
 - copy the private key.
 
-* **In Jenkins UI:**
+**In Jenkins UI:**
 - Navigate to Dashboard -> Manage Jenkins -> Manage Credentials.
 - Click on (global) -> Add Credentials.
 - Select Kind: SSH Username with private key.
@@ -66,8 +66,7 @@ Now, connect your agent to the Jenkins server.
 - Click New Node.
 - *Enter a Node name:* jenkins-agent-1 (or a descriptive name).
 - Select Permanent Agent and click OK.
-
-* **Configure the node details:**
+**Configure the node details:**
 - *Number of executors:* 1 
 - *Remote root directory:* `/home/ubuntu/jenkins_workspace`
 - *Labels:* I use `important` (This label is crucial as it will be used in your Jenkinsfile).
@@ -80,7 +79,7 @@ Click Save.
 ### 7. Install unzip, awscli2 on Jenkins Agent and Assign iam Role to EC2
 The agent needs the AWS CLI to interact with ECR and unzip to install it.
 
-* **On Jenkins Agent:**
+**On Jenkins Agent:**
 
 *Installing unzip:* `sudo apt install unzip -y`
 *Installing AWS CLI:* Use this command one by one `curl "[https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip](https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip)" -o "awscliv2.zip"
@@ -88,7 +87,7 @@ unzip awscliv2.zip
 sudo ./aws/install
 rm -rf awscliv2.zip aws`
 
-* **Create an IAM Policy:**
+**Create an IAM Policy:**
 
 - Navigate to *Policies* -> Create policy.
 - Choose the JSON tab and paste the [policy](      github repo link)
@@ -102,7 +101,7 @@ rm -rf awscliv2.zip aws`
 - In the Add permissions section, search for and attach the JenkinsECRFullAccessPolicy you just created. 
 - Name the role (e.g., JenkinsAgentECRRole) and create it.
 
-* **Attach the IAM Role to your Jenkins Agent EC2 Instance:**
+**Attach the IAM Role to your Jenkins Agent EC2 Instance:**
 
 - Go to the EC2 console.
 - Select your running Jenkins Agent instance.
@@ -113,25 +112,15 @@ rm -rf awscliv2.zip aws`
 
 ### 8. Set Up a New Jenkins Item
 - Configure Jenkins to use your Jenkinsfile from GitHub.
-- Go to Dashboard -> New Item.
-- Enter an Item name (e.g., Docker-ECR-Trivy-Pipeline).
+- Go to Dashboard -> **New Item.**
+- Enter an Item name (e.g., DockerPipeline).
 - Select Pipeline and click OK.
-
-**In the pipeline configuration:**
-
-Definition: Pipeline script from SCM
-
-SCM: Git
-
-Repository URL: Your GitHub repository URL (e.g., https://github.com/your-username/your-repo.git)
-
-Credentials: If your repo is private, add GitHub credentials.
-
-Branches to build: */main (ensure you use main if that's your default branch, rather than master).
-
-Script Path: Jenkinsfile (assuming your Jenkinsfile is in the root of your repository).
-
-Click Save.
+- Definition: **Pipeline script from SCM**
+- SCM: **Git**
+- Repository URL: https://github.com/your-username/your-repo.git
+- Branches to build: */main 
+- Script Path: Jenkinsfile 
+**Click Save.**
 
 11. Trigger the Build!
 Now, kick off your pipeline and watch the magic happen.
