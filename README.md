@@ -90,11 +90,11 @@ rm -rf awscliv2.zip aws`
 
 * **Create an IAM Policy:**
 
-- Navigate to Policies -> Create policy.
+- Navigate to *Policies* -> Create policy.
 - Choose the JSON tab and paste the [policy](      github repo link)
 - Name the policy (e.g., JenkinsECRFullAccessPolicy) and create it.
 
-* **Create an IAM Role:**
+**Create an IAM Role:**
 
 - Go to Roles -> Create role.
 - For Trusted entity type, select `AWS service`
@@ -106,142 +106,18 @@ rm -rf awscliv2.zip aws`
 
 - Go to the EC2 console.
 - Select your running Jenkins Agent instance.
-- Choose Actions -> Security -> Modify IAM role.
-- Select the JenkinsAgentECRRole from the dropdown list.
-- Click Update IAM role.
+- Choose **Actions -> Security -> Modify IAM role.**
+- Select the **JenkinsAgentECRRole** from the dropdown list.
+- Click **Update IAM role**.
 
-Groovy
 
-pipeline {
-    agent { label 'docker-builder' } // Use the label we defined for the agent
+### 8. Set Up a New Jenkins Item
+- Configure Jenkins to use your Jenkinsfile from GitHub.
+- Go to Dashboard -> New Item.
+- Enter an Item name (e.g., Docker-ECR-Trivy-Pipeline).
+- Select Pipeline and click OK.
 
-    environment {
-        AWS_ACCOUNT_ID = '<YOUR_AWS_ACCOUNT_ID>'
-        AWS_REGION = '<YOUR_AWS_REGION>'
-        ECR_REPO_NAME = '<YOUR_ECR_REPO_NAME>'
-        DOCKER_IMAGE_NAME = '<YOUR_DOCKER_IMAGE_NAME>'
-        DOCKER_IMAGE_TAG = 'latest'
-        ECR_REPO_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}[.amazonaws.com/$](https://.amazonaws.com/$){ECR_REPO_NAME}"
-        TRIVY_REPORT_FILE = 'trivy_scan_report.txt'
-    }
-
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: '[https://github.com/your-username/your-repo.git](https://github.com/your-username/your-repo.git)' // Replace with your repo
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
-                    echo "Docker image built: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                }
-            }
-        }
-
-        stage('Login to ECR') {
-            steps {
-                script {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-                    echo "Logged into ECR."
-                }
-            }
-        }
-
-        stage('Tag Docker Image') {
-            steps {
-                script {
-                    sh "docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${ECR_REPO_URI}:${DOCKER_IMAGE_TAG}"
-                    echo "Docker image tagged: ${ECR_REPO_URI}:${DOCKER_IMAGE_TAG}"
-                }
-            }
-        }
-
-        stage('Push Docker Image to ECR') {
-            steps {
-                script {
-                    sh "docker push ${ECR_REPO_URI}:${DOCKER_IMAGE_TAG}"
-                    echo "Docker image pushed to ECR: ${ECR_REPO_URI}:${DOCKER_IMAGE_TAG}"
-                }
-            }
-        }
-
-        stage('Scan with Trivy') {
-            steps {
-                script {
-                    // Install Trivy if not already installed (this ensures the agent always has Trivy)
-                    sh '''
-                        if ! command -v trivy &> /dev/null; then
-                            echo "Trivy not found, installing..."
-                            sudo apt-get update
-                            sudo apt-get install -y wget apt-transport-https gnupg
-                            wget -qO - [https://aquasecurity.github.io/trivy-repo/deb/public.key](https://aquasecurity.github.io/trivy-repo/deb/public.key) | sudo apt-key add -
-                            echo deb [https://aquasecurity.github.io/trivy-repo/deb](https://aquasecurity.github.io/trivy-repo/deb) stable main | sudo tee /etc/apt/sources.list.d/trivy.list
-                            sudo apt-get update
-                            sudo apt-get install -y trivy
-                        else
-                            echo "Trivy is already installed."
-                        fi
-                    '''
-                    // Perform the scan and save output to a file
-                    sh "trivy image --severity HIGH,CRITICAL --format json ${ECR_REPO_URI}:${DOCKER_IMAGE_TAG} > ${TRIVY_REPORT_FILE}"
-                    echo "Trivy scan completed. Report saved to ${TRIVY_REPORT_FILE}"
-                }
-            }
-        }
-
-        stage('Process Trivy Report') {
-            steps {
-                script {
-                    def trivyOutput = sh(script: "cat ${TRIVY_REPORT_FILE}", returnStdout: true).trim()
-
-                    // For direct display in README, we'll output the raw JSON.
-                    // In a production setup, you might parse this into a more readable Markdown table.
-                    writeFile file: 'trivy_report_for_readme.md', text: """
-### Trivy Scan Results for Image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
-
-\`\`\`json
-${trivyOutput}
-\`\`\`
-"""
-                    echo "Trivy scan report for README.md generated."
-                }
-            }
-            post {
-                always {
-                    // Archive the Trivy report for later inspection
-                    archiveArtifacts artifacts: "${TRIVY_REPORT_FILE}"
-                    // This will also make the trivy_report_for_readme.md available for download from Jenkins
-                    archiveArtifacts artifacts: "trivy_report_for_readme.md"
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            cleanWs() // Clean up workspace after build
-        }
-        success {
-            echo 'Pipeline finished successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-    }
-}
-10. Set Up a New Jenkins Item
-Configure Jenkins to use your Jenkinsfile from GitHub.
-
-Go to Dashboard -> New Item.
-
-Enter an Item name (e.g., Docker-ECR-Trivy-Pipeline).
-
-Select Pipeline and click OK.
-
-In the pipeline configuration:
+**In the pipeline configuration:**
 
 Definition: Pipeline script from SCM
 
