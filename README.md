@@ -76,7 +76,7 @@ Now, connect your agent to the Jenkins server.
 - Host Key Verification Strategy: For a lab environment, select Non verifying Verification Strategy.
 Click Save.
 
-### 7. Install unzip, awscli2 on Jenkins Agent and Assign iam Role to EC2
+### 7. Install unzip, awscli2, Trivy on Jenkins Agent and Assign iam Role to EC2
 The agent needs the AWS CLI to interact with ECR and unzip to install it.
 
 **On Jenkins Agent:**
@@ -86,6 +86,14 @@ The agent needs the AWS CLI to interact with ECR and unzip to install it.
 unzip awscliv2.zip
 sudo ./aws/install
 rm -rf awscliv2.zip aws`
+
+**Install Trivy:**
+`sudo apt-get install wget apt-transport-https gnupg lsb-release
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy`
+
 
 **Create an IAM Policy:**
 
@@ -129,72 +137,4 @@ On the Jenkins item page for your pipeline, click Build Now in the left sidebar.
 
 Monitor the build progress in the Build History.
 
-Click on a specific build number, then Console Output to see the detailed logs, including the raw Trivy scan results. You can also check the Artifacts section for the generated trivy_report_for_readme.md file.
 
-Trivy Scan Output
-This section will display the vulnerability scan results for your Docker image. After a successful Jenkins build, copy the content from the trivy_report_for_readme.md artifact (or directly from the Jenkins console output in the "Process Trivy Report" stage) and paste it here.
-
-JSON
-
-{
-  "SchemaVersion": 2,
-  "ArtifactName": "YOUR_AWS_ACCOUNT_ID.dkr.ecr.YOUR_AWS_[REGION.amazonaws.com/YOUR_ECR_REPO_NAME:latest](https://REGION.amazonaws.com/YOUR_ECR_REPO_NAME:latest)",
-  "ArtifactType": "container_image",
-  "Metadata": {
-    "ImageID": "sha256:...",
-    "OS": {
-      "Family": "ubuntu",
-      "Name": "22.04"
-    }
-  },
-  "Results": [
-    {
-      "Target": "your_image_layer",
-      "Class": "os-package",
-      "Type": "debian",
-      "Vulnerabilities": [
-        {
-          "VulnerabilityID": "CVE-XXXX-XXXX",
-          "PkgName": "libssl3",
-          "InstalledVersion": "3.0.x-y",
-          "FixedVersion": "3.0.x-z",
-          "Severity": "HIGH",
-          "Description": "OpenSSL vulnerability...",
-          "References": [
-            "[https://nvd.nist.gov/vuln/detail/CVE-XXXX-XXXX](https://nvd.nist.gov/vuln/detail/CVE-XXXX-XXXX)"
-          ]
-        },
-        {
-          "VulnerabilityID": "CVE-YYYY-YYYY",
-          "PkgName": "curl",
-          "InstalledVersion": "7.81.0-1ubuntu1.11",
-          "FixedVersion": "7.81.0-1ubuntu1.12",
-          "Severity": "CRITICAL",
-          "Description": "Curl vulnerability...",
-          "References": [
-            "[https://nvd.nist.gov/vuln/detail/CVE-YYYY-YYYY](https://nvd.nist.gov/vuln/detail/CVE-YYYY-YYYY)"
-          ]
-        }
-      ]
-    }
-    // ... more scan results will appear here ...
-  ]
-}
-Next Steps
-Implement Webhooks: Configure a GitHub webhook to automatically trigger Jenkins builds whenever code is pushed to your repository.
-
-Notifications: Set up email or Slack notifications for build status changes (success/failure).
-
-Automated README Update: Explore ways to automate the update of this README.md with the latest Trivy scan results directly from the Jenkins pipeline (e.g., using GitHub API).
-
-Security Best Practices:
-
-Transition from direct AWS credentials to IAM roles for EC2 instances for enhanced security.
-
-Restrict security group inbound rules to the absolute minimum necessary for your environment.
-
-Regularly update Jenkins, its plugins, and all software installed on both the server and agent.
-
-Implement Trivy policies to fail builds if critical vulnerabilities are discovered, enforcing a secure pipeline.
-
-Clean Up: Remember to terminate your EC2 instances 
