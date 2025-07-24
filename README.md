@@ -51,83 +51,64 @@ Choose "Install suggested plugins."
 - copy the public key and paste into authorized key.
 - copy the private key.
 
-In Jenkins UI:
+* **In Jenkins UI:**
+- Navigate to Dashboard -> Manage Jenkins -> Manage Credentials.
+- Click on (global) -> Add Credentials.
+- Select Kind: SSH Username with private key.
+- Set Scope: Global.
+- Enter the Username: of the user on your Jenkins agent, for me `ubuntu`.
+- For Private Key: Select Enter directly and paste the private key copied from the agent.
+- Click OK.
 
-Navigate to Dashboard -> Manage Jenkins -> Manage Credentials.
-
-Click on (global) -> Add Credentials.
-
-Select Kind: SSH Username with private key.
-
-Set Scope: Global.
-
-Provide a descriptive ID: jenkins-agent-ssh.
-
-Enter the Username: of the user on your Jenkins agent (e.g., ubuntu, ec2-user).
-
-For Private Key: Select Enter directly and paste the private key copied from the agent.
-
-Click OK.
-
-7. Add Jenkins Agent Node
+### 6. Add Jenkins Agent Node
 Now, connect your agent to the Jenkins server.
+- Manage Jenkins -> Manage Nodes and Clouds.
+- Click New Node.
+- *Enter a Node name:* jenkins-agent-1 (or a descriptive name).
+- Select Permanent Agent and click OK.
 
-In Jenkins, go to Dashboard -> Manage Jenkins -> Manage Nodes and Clouds.
-
-Click New Node.
-
-Enter a Node name: jenkins-agent-1 (or a descriptive name).
-
-Select Permanent Agent and click OK.
-
-Configure the node details:
-
-Description: Jenkins Agent for Docker Builds
-
-Number of executors: 1 (or more, depending on your workload)
-
-Remote root directory: /home/<your_user>/jenkins_workspace (replace <your_user> with the agent's user).
-
-Labels: docker-builder (This label is crucial as it will be used in your Jenkinsfile).
-
-Launch method: Launch agents via SSH.
-
-Host: Enter the Private IP address of your Jenkins Agent instance.
-
-Credentials: Select the SSH credential you created in the previous step (jenkins-agent-ssh).
-
-Host Key Verification Strategy: For a lab environment, select Non verifying Verification Strategy. (For production, consider Known hosts file or Manually provided key for better security).
-
+* **Configure the node details:**
+- *Number of executors:* 1 
+- *Remote root directory:* `/home/ubuntu/jenkins_workspace`
+- *Labels:* I use `important` (This label is crucial as it will be used in your Jenkinsfile).
+- *Launch method:* Launch agents via SSH.
+- *Host:* Enter the Private IP address of your Jenkins Agent instance.
+- *Credentials:* Select the SSH credential you created in the previous step (jenkins-agent-ssh).
+- Host Key Verification Strategy: For a lab environment, select Non verifying Verification Strategy.
 Click Save.
 
-8. Install unzip, awscli2 on Jenkins Agent and Configure AWS Profile
+### 7. Install unzip, awscli2 on Jenkins Agent and Assign iam Role to EC2
 The agent needs the AWS CLI to interact with ECR and unzip to install it.
 
-On Jenkins Agent:
+* **On Jenkins Agent:**
 
-Bash
-
-sudo apt update
-sudo apt install unzip -y
-curl "[https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip](https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip)" -o "awscliv2.zip"
+*Installing unzip:* `sudo apt install unzip -y`
+*Installing AWS CLI:* Use this command one by one `curl "[https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip](https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip)" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
-rm -rf awscliv2.zip aws
+rm -rf awscliv2.zip aws`
 
-# Configure AWS Profile (ensure the IAM role/user has ECR push/pull permissions)
-mkdir -p ~/.aws
-echo "[default]" > ~/.aws/credentials
-echo "aws_access_key_id = YOUR_AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
-echo "aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
-echo "[default]" > ~/.aws/config
-echo "region = YOUR_AWS_REGION" >> ~/.aws/config
-Important: Replace YOUR_AWS_ACCESS_KEY_ID, YOUR_AWS_SECRET_ACCESS_KEY, and YOUR_AWS_REGION with your actual AWS credentials and desired region. For production environments, it is highly recommended to use IAM roles for EC2 instances instead of direct credentials for enhanced security.
+* **Create an IAM Policy:**
 
-Pipeline Setup
-9. Prepare Your Jenkinsfile (on GitHub)
-Ensure your GitHub repository contains your application code (e.g., a simple web application) and a Dockerfile. The Jenkinsfile orchestrates the entire CI/CD process.
+- Navigate to Policies -> Create policy.
+- Choose the JSON tab and paste the [policy](      github repo link)
+- Name the policy (e.g., JenkinsECRFullAccessPolicy) and create it.
 
-Crucially, replace the placeholders like <YOUR_AWS_ACCOUNT_ID>, <YOUR_AWS_REGION>, <YOUR_ECR_REPO_NAME>, <YOUR_DOCKER_IMAGE_NAME>, and <YOUR_DOCKER_IMAGE_TAG> with your specific values.
+* **Create an IAM Role:**
+
+- Go to Roles -> Create role.
+- For Trusted entity type, select `AWS service`
+- For Use case, select EC2, then click Next.
+- In the Add permissions section, search for and attach the JenkinsECRFullAccessPolicy you just created. 
+- Name the role (e.g., JenkinsAgentECRRole) and create it.
+
+* **Attach the IAM Role to your Jenkins Agent EC2 Instance:**
+
+- Go to the EC2 console.
+- Select your running Jenkins Agent instance.
+- Choose Actions -> Security -> Modify IAM role.
+- Select the JenkinsAgentECRRole from the dropdown list.
+- Click Update IAM role.
 
 Groovy
 
