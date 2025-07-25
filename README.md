@@ -97,7 +97,7 @@ sudo apt-get install trivy`
 **Create an IAM Policy:**
 
 - Navigate to *Policies* -> Create policy.
-- Choose the JSON tab and paste the [policy](      github repo link)
+- Choose the JSON tab and paste the [policy](http://github.com/pyaesoekyaw/docker-beginner-lab/blob/main/iamRole.txt)
 - Name the policy (e.g., JenkinsECRFullAccessPolicy) and create it.
 
 **Create an IAM Role:**
