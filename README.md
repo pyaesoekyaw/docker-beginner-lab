@@ -28,9 +28,8 @@ The core idea is to automate the process of containerizing an application, secur
 ### 3. Install Java and Jenkins
 
 **On Jenkins Server and Jenkins Agent:**
-
-* **Install Java:** `sudo apt update`
-                    `sudo apt install fontconfig openjdk-21-jre`
+* **Install Java:** `sudo apt update`<br>
+                      `sudo apt install fontconfig openjdk-21-jre`
 * **Install Jenkins:** `sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
   https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
 echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
