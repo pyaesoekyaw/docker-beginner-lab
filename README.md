@@ -116,8 +116,24 @@ sudo apt-get install trivy`
 - Select the **JenkinsAgentECRRole** from the dropdown list.
 - Click **Update IAM role**.
 
+### 8. Docker Environment Setup on Jenkins Agent
+Let connect your agent to the Jenkins agent.
+- *Setup Docker Repository:* 
+`sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc`
 
-### 8. Set Up a New Jenkins Item
+`echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update`
+- *Install Latest Version:* `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
+- *Assign permission:* `sudo su -` `usermod -aG docker ubuntu` `usermod -aG docker jenkins`
+  
+### 9. Set Up a New Jenkins Item
 - Configure Jenkins to use your Jenkinsfile from GitHub.
 - Go to Dashboard -> **New Item.**
 - Enter an Item name (e.g., DockerPipeline).
