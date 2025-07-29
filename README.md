@@ -81,10 +81,10 @@ The agent needs the AWS CLI to interact with ECR and unzip to install it.
 **On Jenkins Agent:**
 
 *Installing unzip:* `sudo apt install unzip -y`
-*Installing AWS CLI:* Use this command one by one `curl "[https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip](https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip)" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-rm -rf awscliv2.zip aws`
+*Installing AWS CLI:* Use this command one by one `curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"`
+`unzip awscliv2.zip`
+`sudo ./aws/install`
+`rm -rf awscliv2.zip aws`
 
 **Install Trivy:**
 `sudo apt-get install wget apt-transport-https gnupg lsb-release
