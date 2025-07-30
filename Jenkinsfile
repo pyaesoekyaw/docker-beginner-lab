@@ -32,16 +32,4 @@ pipeline {
             }
         }
     }
-    // Global post actions for the entire pipeline
-    post {
-        always {
-            cleanWs() // Clean up the workspace on the agent after the build
-        }
-        success {
-            echo 'Pipeline finished successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-    }
 }
