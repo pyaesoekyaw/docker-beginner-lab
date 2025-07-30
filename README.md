@@ -28,16 +28,8 @@ The core idea is to automate the process of containerizing an application, secur
 ### 3. Install Java and Jenkins
 
 **On Jenkins Server and Jenkins Agent:**
-* **Install Java:** `sudo apt update`<br>
-                      `sudo apt install fontconfig openjdk-21-jre`
-* **Install Jenkins:** `sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
-  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
-  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get install jenkins`
-
+* **Install Java:** [command](https://github.com/pyaesoekyaw/docker-beginner-lab/blob/main/installation.txt)
+* **Install Jenkins:** [command](https://github.com/pyaesoekyaw/docker-beginner-lab/blob/main/installation.txt)
 
 ### 5. Access Jenkins and Install Recommended Plugins
 Open your web browser and navigate to http://<Jenkins_Server_Public_IP>:8080.
@@ -86,26 +78,15 @@ The agent needs the AWS CLI to interact with ECR and unzip to install it.
 `sudo ./aws/install`
 `rm -rf awscliv2.zip aws`
 
-**Install Trivy:**
-`sudo apt-get install wget apt-transport-https gnupg lsb-release
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
-sudo apt-get install trivy`
+**Install Trivy:** [command](https://github.com/pyaesoekyaw/docker-beginner-lab/blob/main/installation.txt).
 
-
-**Create an IAM Policy:**
-
-- Navigate to *Policies* -> Create policy.
-- Choose the JSON tab and paste the [policy](http://github.com/pyaesoekyaw/docker-beginner-lab/blob/main/iamRole.txt)
-- Name the policy (e.g., JenkinsECRFullAccessPolicy) and create it.
 
 **Create an IAM Role:**
 
 - Go to Roles -> Create role.
 - For Trusted entity type, select `AWS service`
 - For Use case, select EC2, then click Next.
-- In the Add permissions section, search for and attach the JenkinsECRFullAccessPolicy you just created. 
+- In the Add permissions section, search for and attach the `AmazonEC2ContainerRegistryFullAccess`. 
 - Name the role (e.g., JenkinsAgentECRRole) and create it.
 
 **Attach the IAM Role to your Jenkins Agent EC2 Instance:**
@@ -118,22 +99,21 @@ sudo apt-get install trivy`
 
 ### 8. Docker Environment Setup on Jenkins Agent
 Let connect your agent to the Jenkins agent.
-- *Setup Docker Repository:* 
-`sudo apt-get update
-sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc`
-
-`echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update`
-- *Install Latest Version:* `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
+- *setup Docker:* [command](https://github.com/pyaesoekyaw/docker-beginner-lab/blob/main/installation.txt)
 - *Assign permission:* `sudo su -` `usermod -aG docker ubuntu` `usermod -aG docker jenkins`
+
+### 9. Create Elastic Container Registry Repository
+- Go to ECR Dashboard -> **Create Private Repository**
+- Assign Name and Create Repository.
+- Copy the **URL** of the Repository.
   
-### 9. Set Up a New Jenkins Item
+### 10. Replace your data
+- In my github Repo, edit the Jenkinsfile.
+- replace 'label' for jenkins agent. #if you change it
+- replace 'ECR Url' of your repository.
+- replace your desired image 'name'.
+  
+### 11. Set Up a New Jenkins Item
 - Configure Jenkins to use your Jenkinsfile from GitHub.
 - Go to Dashboard -> **New Item.**
 - Enter an Item name (e.g., DockerPipeline).
