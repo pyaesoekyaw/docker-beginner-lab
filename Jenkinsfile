@@ -12,7 +12,7 @@ pipeline {
         stage('push') {
             steps {
                 script {
-                    sh '''aws ecr get-login-password --region "us-east-1" | docker login --username AWS --password-stdin 842675988267.dkr.ecr.us-east-1.amazonaws.com/mywork
+                    sh '''aws ecr get-login-password | docker login --username AWS --password-stdin 842675988267.dkr.ecr.us-east-1.amazonaws.com/mywork
                     docker tag dojo:latest 842675988267.dkr.ecr.us-east-1.amazonaws.com/mywork:latest
                     docker push 842675988267.dkr.ecr.us-east-1.amazonaws.com/mywork:latest'''
                 }
