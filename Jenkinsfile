@@ -25,12 +25,11 @@ pipeline {
                    sh 'trivy image dojo'
                 }
             }
-       
+        }
         stage('testing') {
             steps {
                 echo 'bravo'
             }
         }
     }
-}
 }
